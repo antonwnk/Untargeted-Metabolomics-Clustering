@@ -47,7 +47,7 @@ def main():
                     pickle_out = open(path + '/' +'load.pkl', 'wb')
                     pickle.dump(load, pickle_out)
             else:
-                print 'Please enter the right thargeted VOCs file name.'
+                print 'Please enter the right targeted VOCs file name.'
         else:
             print 'Please enter the right dataset file name.'
     else:
