@@ -25,7 +25,7 @@ class Targeted:
         self.threshold = threshold
         print 'Used threshold = ', self.threshold
         self.loaded_samples = []
-        self.label = []
+        self.clusters = []
         self.retention_index = []
         self.ri_vary = []
         self.samples = []
@@ -79,7 +79,7 @@ class Targeted:
             for voc_idx, voc_row in enumerate(self.dataset):
                 if target_row[self._sample_idx] == voc_row[self._sample_idx] and \
                         target_row[self._voc_num_idx] == voc_row[self._voc_num_idx]:
-                    self.label.append([voc_idx])
+                    self.clusters.append([voc_idx])
                     self.samples.append([target_row[self._sample_idx]])
                     self.retention_index.append([int(target_row[self._ri_idx])])
                     break
@@ -105,7 +105,7 @@ class Targeted:
                                                                                 int(target_row[self._ri_end_idx])):
                                 compared_m_z = cosine.normalisation(local_index)
                                 # For each previously clustered VOC
-                                for clu in self.label[target_idx]:
+                                for clu in self.clusters[target_idx]:
                                     targ_m_z = cosine.normalisation(clu)
                                     # If new and old VOCs similar enough store idx and distance of new
                                     if cosine.cosine_similarity(targ_m_z, compared_m_z) >= self.threshold:
@@ -118,12 +118,12 @@ class Targeted:
                     if len(local_targeted_compound) >= 1:
                         no_update = False
                         most_similar = max(local_targeted_compound, key=lambda tup: tup[1])[0]
-                        self.label[target_idx].append(most_similar)
+                        self.clusters[target_idx].append(most_similar)
                         self.samples[target_idx].append(self.dataset[most_similar][self._sample_idx])
                         self.retention_index[target_idx].append(int(self.dataset[most_similar][self._ri_idx]))
                 # When no more VOCs are added to the cluster
                 if no_update:
-                    n_samples = len(self.label[target_idx])
+                    n_samples = len(self.clusters[target_idx])
                     ri = self.retention_index[target_idx]
                     print 'VOC ', target_idx, ' was found in ', n_samples, ' samples.'
                     print 'Max RI = ', max(ri), ', min RI = ', min(ri), '.'
@@ -131,21 +131,21 @@ class Targeted:
                     break
 
         # Now testing all the clusters to find the max distance between 2 VOCs from the same cluster,and fill in self.ri_vary.
-        for clu in range(len(self.label)):
-            if clu == len(self.label) - 1:
+        for clu in range(len(self.clusters)):
+            if clu == len(self.clusters) - 1:
                 self.ri_vary.append([(max(self.retention_index[clu - 1]) + min(self.retention_index[clu])) / 2,
                                      max(self.retention_index[clu]) - min(self.retention_index[clu])])
             else:
                 self.ri_vary.append([(max(self.retention_index[clu]) + min(self.retention_index[clu + 1])) / 2,
                                      max(self.retention_index[clu]) - min(self.retention_index[clu])])
 
-            for in_clust in range(len(self.label[clu])):
-                for in_clust2 in range(len(self.label[clu])):
+            for in_clust in range(len(self.clusters[clu])):
+                for in_clust2 in range(len(self.clusters[clu])):
                     if in_clust != in_clust2:
-                        if cosine.cosine_similarity(cosine.normalisation(self.label[clu][in_clust]),
-                                                    cosine.normalisation(self.label[clu][in_clust2])) < self.epsilon:
-                            self.epsilon = cosine.cosine_similarity(cosine.normalisation(self.label[clu][in_clust]),
-                                                                    cosine.normalisation(self.label[clu][in_clust2]))
+                        if cosine.cosine_similarity(cosine.normalisation(self.clusters[clu][in_clust]),
+                                                    cosine.normalisation(self.clusters[clu][in_clust2])) < self.epsilon:
+                            self.epsilon = cosine.cosine_similarity(cosine.normalisation(self.clusters[clu][in_clust]),
+                                                                    cosine.normalisation(self.clusters[clu][in_clust2]))
         print 'Epsilon = ', self.epsilon
         self.ri_vary.sort(key=lambda tup: tup[0], reverse=False)
         self.ri_variation_report()
@@ -163,13 +163,13 @@ class Targeted:
         for m_z in range(self.first_m_z, self.last_m_z + 1):
             result_file.write(str(m_z) + ",")
         result_file.write("\n")
-        for clu in range(len(self.label)):
-            for in_clust in range(len(self.label[clu])):
-                result_file.write(str(self.dataset[int(self.label[clu][in_clust])][0]) + ",")
-                result_file.write(str(self.dataset[int(self.label[clu][in_clust])][1]) + ",")
-                result_file.write(str(self.dataset[int(self.label[clu][in_clust])][2]) + ",")
-                for voc in range(3, len(self.dataset[self.label[clu][in_clust]])):
-                    result_file.write(str(self.dataset[int(self.label[clu][in_clust])][voc]) + ",")
+        for clu in range(len(self.clusters)):
+            for in_clust in range(len(self.clusters[clu])):
+                result_file.write(str(self.dataset[int(self.clusters[clu][in_clust])][0]) + ",")
+                result_file.write(str(self.dataset[int(self.clusters[clu][in_clust])][1]) + ",")
+                result_file.write(str(self.dataset[int(self.clusters[clu][in_clust])][2]) + ",")
+                for voc in range(3, len(self.dataset[self.clusters[clu][in_clust]])):
+                    result_file.write(str(self.dataset[int(self.clusters[clu][in_clust])][voc]) + ",")
                 result_file.write("\n")
             result_file.write('##########################################################')
             result_file.write("\n")
