@@ -79,7 +79,7 @@ class Targeted:
             for voc_idx, voc_row in enumerate(self.dataset):
                 if target_row[self._sample_idx] == voc_row[self._sample_idx] and \
                         target_row[self._voc_num_idx] == voc_row[self._voc_num_idx]:
-                    self.clusters.append([voc_idx])
+       b             self.clusters.append([voc_idx])
                     self.samples.append([target_row[self._sample_idx]])
                     self.retention_index.append([int(target_row[self._ri_idx])])
                     break

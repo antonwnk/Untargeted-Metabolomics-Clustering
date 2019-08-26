@@ -125,6 +125,5 @@ dmypy.json
 
 /.idea
 /untrack-my-heart
-*.csv
-*.pkl
+/data
 
