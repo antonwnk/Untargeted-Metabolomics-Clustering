@@ -124,5 +124,6 @@ dmypy.json
 .pyre/
 
 /.idea
-/untracked-files
+/untracked-data
+.DS_Store
 
